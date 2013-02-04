@@ -1,4 +1,8 @@
-package com.lapsedpacifist.astro.novas.core;
+package com.lapsedpacifist.astro.model.observatory;
+
+import com.lapsedpacifist.astro.model.position.GeographicLocation;
+
+
 
 public class EarthBasedObservatory extends Observatory {
 

@@ -1,4 +1,4 @@
-package com.lapsedpacifist.astro.novas.core.calculation;
+package com.lapsedpacifist.astro.novas.core;
 
 public class IllegalNOVASParameterValue extends Exception {
 	

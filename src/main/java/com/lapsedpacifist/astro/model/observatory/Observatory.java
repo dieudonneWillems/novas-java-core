@@ -1,4 +1,4 @@
-package com.lapsedpacifist.astro.novas.core;
+package com.lapsedpacifist.astro.model.observatory;
 
 public abstract class Observatory {
 	

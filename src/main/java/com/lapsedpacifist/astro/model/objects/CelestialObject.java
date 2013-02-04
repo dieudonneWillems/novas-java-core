@@ -1,4 +1,4 @@
-package com.lapsedpacifist.astro.novas.core.objects;
+package com.lapsedpacifist.astro.model.objects;
 
 public interface CelestialObject {
 

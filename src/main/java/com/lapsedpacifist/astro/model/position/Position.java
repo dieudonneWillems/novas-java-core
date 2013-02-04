@@ -1,4 +1,4 @@
-package com.lapsedpacifist.astro.novas.core;
+package com.lapsedpacifist.astro.model.position;
 
 public class Position {
 	
