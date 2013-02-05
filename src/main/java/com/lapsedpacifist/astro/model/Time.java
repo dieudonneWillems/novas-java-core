@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import com.lapsedpacifist.astro.novas.core.Novas;
 public class Time extends Date {
 
 	private static Logger logger = LoggerFactory.getLogger(Time.class);
-	private static HashMap<Time,Double> deltaAT = new HashMap<Time,Double>();
+	private static ArrayList<Object[]> deltaAT = new ArrayList<Object[]>();
 	private static boolean deltaATInternetLoaded = false;
 	private static Time latestTimeForDeltaAT = null;
 	
@@ -170,25 +170,31 @@ public class Time extends Date {
 	 */
 	private static long getDeltaAT(Date cdate){
 		Time.loadDeltaAT(cdate);
-		Set<Time> dates = deltaAT.keySet();
 		double dat = 0;
-		for(Time date : dates){
+		for(Object[] obj : deltaAT){
+			Time date = (Time) obj[0];
+			Double value = (Double) obj[1];
 			if(date.after(cdate)){
 				break;
 			}
-			dat = deltaAT.get(date).intValue();
+			dat = value.doubleValue();
 		}
+		logger.debug("delta AT at "+cdate+" = "+dat);
 		return (long)(dat*1000);
 	}
 	
 	private static void loadDeltaAT(Date date){
 		if(deltaAT.size()==0){
 			try {
-				HashMap<Time,Double> tmp = loadDeltaATFile(Time.class.getResourceAsStream("/com/lapsedpacifist/astro/resources/tai-utc.dat"));
+				logger.info("Loading LOCAL deltaAT file for determining time difference between UTC and TAI.");
+				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+				URL url = classLoader.getResource("/src/main/resources/tai-utc.dat");
+				logger.info("LOCAL URL: "+url);
+				ArrayList<Object[]> tmp = loadDeltaATFile(url.openStream());
 				deltaAT = tmp;
 				deltaATInternetLoaded = false;
-			} catch (IOException e) {
-				logger.error("Could not load TAI-UTC values file.",e);
+			} catch (Exception e) {
+				logger.warn("Could not load local TAI-UTC values file.",e);
 				deltaAT = null;
 			}
 		}
@@ -198,31 +204,35 @@ public class Time extends Date {
 			if(latestTimeForDeltaAT!=null) dif = date.getTime()-latestTimeForDeltaAT.getTimeUTC();
 			// test if the difference is more than a half year.
 			if(dif>15638400){
-				HashMap<Time, Double> tmp;
+				ArrayList<Object[]> tmp;
 				try {
+					logger.info("Loading deltaAT file for determining time difference between UTC and TAI.");
 					tmp = loadDeltaATFile((new URL("http://maia.usno.navy.mil/ser7/tai-utc.dat")).openStream());
-					if(tmp.size()<0){
+					if(tmp.size()>0){
 						deltaAT = tmp;
 						deltaATInternetLoaded = true;
 					}
 				} catch (Exception e) {
-					logger.error("Could not load TAI-UTC values file.",e);
+					logger.warn("Could not load TAI-UTC values file.",e);
 				} 
 			}
 		}
 	}
 	
-	private static HashMap<Time,Double> loadDeltaATFile(InputStream stream) throws IOException{
-		HashMap<Time,Double> tmp = new HashMap<Time,Double>();
+	private static ArrayList<Object[]> loadDeltaATFile(InputStream stream) throws IOException{
+		ArrayList<Object[]> tmp = new ArrayList<Object[]>();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		String line;
 		while((line = reader.readLine())!=null){
-			String jdstr = line.substring(16, 12);
+			String jdstr = line.substring(16, 28);
 			double jd = new Double(jdstr).doubleValue();
-			String dstr = line.substring(36,13);
+			String dstr = line.substring(36,49);
 			Double d = new Double(dstr);
 			Time time = Time.getTimeForJulianDateUTC(jd);
-			tmp.put(time, d);
+			Object[] obj = new Object[2];
+			obj[0] = time;
+			obj[1] = d;
+			tmp.add(obj);
 			latestTimeForDeltaAT = time;
 		}
 		return tmp;
