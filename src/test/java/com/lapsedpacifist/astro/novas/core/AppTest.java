@@ -44,6 +44,10 @@ public class AppTest extends TestCase
     		Assert.assertEquals("Time to Julian Date conversion", jdutc, time.getJulianDateUTC(), millisecondPrecisionInDays);
     		Assert.assertEquals("TAI time",jdtai,time.getJulianDateTAI(),millisecondPrecisionInDays);
     		Assert.assertEquals("TT-TAI conversion", time.getTimeTT()-time.getTimeTAI(), 32184l);
+    		double ut1 = time.getJulianDateUT1();
+    		Time time2 = Time.getTimeForJulianDateUT1(ut1);
+    		Assert.assertEquals("UT1 conversion",ut1, time2.getJulianDateUT1(), millisecondPrecisionInDays);
+    		Assert.assertEquals("UT1 comparisson",time.getTimeUTC(), time2.getTimeUTC());
     	}catch(Exception e){
             AssertionFailedError ase = new AssertionFailedError(e.getMessage());
             ase.initCause(e);
