@@ -204,7 +204,7 @@ public class Time extends Date {
 	
 	private static long calculateTime(double jd){
 		double days = jd-2440587.500000;
-		long time = (long)(days*86400000);
+		long time = (long)(days*86400000+0.5);
 		return time;
 	}
 	
