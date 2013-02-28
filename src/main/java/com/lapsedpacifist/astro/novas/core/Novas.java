@@ -18,8 +18,14 @@ import com.lapsedpacifist.astro.model.position.CelestialPosition;
  */
 public class Novas {
 
+	/** The flag specifying ephemeris with the origin as barycentre of the solar system. */
+	public static final short ORIGIN_SOLAR_SYSTEM_BARYCENTRE = 0;
+	
+	/** The flag specifying ephemeris with the origin as the centre of mass of the Sun. */
+	public static final short ORIGIN_SOLAR_CENTRE_OF_MASS = 1;
+
 	/** Julian Date (TDB) of epoch J2000.0 */
-   public static double T0 = 2451545.00000000;
+	public static double T0 = 2451545.00000000;
 
 	/** Flag specifying that full accuracy is needed. */
 	public static short NOVAS_FULL_ACCURACY = 0;
@@ -28,6 +34,7 @@ public class Novas {
 	public static short NOVAS_REDUCED_ACCURACY = 1;
 	
 	private CelestialObject earth=null,sun=null;
+	private double lastCalculationTimeTDB = 0;
 	private ObjectFactory objectFactory;
 	private static Novas singleton;
 	
@@ -165,10 +172,41 @@ public class Novas {
 		}
 		// Get TDB
 		double jdTDB = time.getJulianDateTDB();
+		if(Math.abs(lastCalculationTimeTDB-jdTDB)>1.0e-8){
+			lastCalculationTimeTDB = jdTDB;
+			PositionAndVelocityVector posvecEarth = calculateEphemeris(jdTDB,0,earth,Novas.ORIGIN_SOLAR_SYSTEM_BARYCENTRE,accuracy);
+			PositionAndVelocityVector posvecSun = calculateEphemeris(jdTDB,0,sun,Novas.ORIGIN_SOLAR_SYSTEM_BARYCENTRE,accuracy);
+		}
 		//TODO Implement method
 		return null;
 	}
 	
+	/**
+	 * Retrieves the position and velocity of a solar system body from
+	 * a fundamental ephemeris.
+	 * <br/>
+	 * This is method is based on the NOVAS-C function <code>ephemeris</code>.
+	 * It only returns the seconds difference.
+	 * @param jdTDB The Barycentric Dynamical Time (TDB) as a Julian Date, may include the fraction.
+	 * @param jdfrac An extra fraction that can be added to the Julian Date for extra precission.
+	 * @param object The object whose position and velocity need to be calculated.
+	 * @param origin The origin used for the calculation, 
+	 * either the baycentre of the solar system or the centre of mass of the Sun.
+	 * @param accuracy 
+	 * @return The position and velocity vectors.
+	 * @throws IllegalNOVASParameterValue When the value for the origin is not allowed.
+	 * @see Novas#NOVAS_FULL_ACCURACY
+	 * @see Novas#NOVAS_REDUCED_ACCURACY
+	 * @see Novas#ORIGIN_SOLAR_SYSTEM_BARYCENTRE
+	 * @see Novas#ORIGIN_SOLAR_CENTRE_OF_MASS
+	 */
+	public PositionAndVelocityVector calculateEphemeris(double jdTDB, int jdfrac, CelestialObject object, short origin, short accuracy) throws IllegalNOVASParameterValue {
+		// Check the value of origin
+		if(origin<0 || origin >1) throw new IllegalNOVASParameterValue("Illegal value for origin.");
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/**
 	 * Computes the difference (in seconds) between Terrestrial Time (TT) 
 	 * or Terrestrial Dynamical Time (TDT) and Barycentric Dynamical Time
